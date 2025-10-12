@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "equitable_batch_api"
+version = "0.1.0"
+description = "Asynchronous batch processing with Spark"
+authors = ["Coherent <team@coherent.global>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+cspark = "^0.2.2"
+pandas = "^2.2.3"
+
+[tool.poetry.group.dev.dependencies]
+python-dotenv = "^1.0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

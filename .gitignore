@@ -1,0 +1,11 @@
+.env
+inputs
+outputs
+final
+*.log
+*.xlsx
+outputs.json
+TODO.txt
+.temp/
+__pycache__/
+.venv
