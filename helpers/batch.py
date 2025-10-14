@@ -61,7 +61,7 @@ def run_batch():
             pipeline.close()
 
 
-def handle_interrupt(signal, frame, pipeline):  # noqa: ARG001
+def handle_interrupt(signal, frame, pipeline: Spark.Pipeline):  # noqa: ARG001
     """Handles the Ctrl + C (SIGINT) signal."""
     logger.debug('\nCtrl + C detected. Attempting to cancel the pipeline...')
     if pipeline:

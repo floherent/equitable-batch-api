@@ -3,7 +3,8 @@ import threading
 import time
 from multiprocessing import Queue
 from queue import Empty
-
+from cspark.sdk import Pipeline
+from .chunk import ChunkGenerator, ChunkProcessor
 from .config import logger
 
 
@@ -41,7 +42,7 @@ class ThreadController:
         return self._counters[counter_name] if counter_name in self._counters else getattr(self, counter_name)
 
 
-def log_pipeline_status(pipeline, filepath, controller, interval=6):
+def log_pipeline_status(pipeline: Pipeline, filepath: str, controller: ThreadController, interval: float = 6):
     """Logs pipeline status to a CSV file at specified intervals."""
     logs = [['Batch ID', 'Chunks Processed', 'Time']]
     last_records = 0
@@ -51,7 +52,8 @@ def log_pipeline_status(pipeline, filepath, controller, interval=6):
         status = pipeline.get_status().data
         current_time = time.time()
 
-        logs.append([pipeline.batch_id, status['records_completed'] - last_records, current_time - last_time])  # type: ignore
+        logs.append([pipeline.batch_id, status['records_completed'] -
+                    last_records, current_time - last_time])  # type: ignore
         last_records = status['records_completed']
         last_time = current_time
 
@@ -113,7 +115,7 @@ def upload_to_pipeline(pipeline, upload_queue, controller, target, verbose):
         return False
 
 
-def download_chunks(pipeline, download_queue, controller, delay=2, verbose=False):
+def download_chunks(pipeline: Pipeline, download_queue, controller, delay=2, verbose=False):
     """Downloads chunks from the pipeline."""
     while not (
         controller.is_done_enqueuing() and controller.get('chunks_downloaded') == controller.get('total_chunks')
@@ -144,16 +146,16 @@ def process_chunks(download_queue, chunk_processor, controller, verbose=False):
 
 
 def run_threads(
-    pipeline,
-    chunk_generator,
-    chunk_processor,
-    threads_up,
-    threads_down,
-    target=0.5,
-    delay=2.0,
-    verbose=False,
-    logging=False,
-    log_path='',
+    pipeline: Pipeline,
+    chunk_generator: ChunkGenerator,
+    chunk_processor: ChunkProcessor,
+    threads_up: int,
+    threads_down: int,
+    target: float = 0.5,
+    delay: float = 2.0,
+    verbose: bool = False,
+    logging: bool = False,
+    log_path: str = '',
 ):
     """Runs the enqueuing, uploading, downloading, and processing threads."""
     start_time = time.time()

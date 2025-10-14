@@ -20,6 +20,7 @@ class ChunkGenerator:
 
         self.files = self._get_file_paths(indir)  # csv files containing input data
         self.current_file_index = 0
+        self.round = 0
 
         if self.files:
             self._load_current_file()  # Load the first file
@@ -105,6 +106,8 @@ class ChunkGenerator:
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
+        length = len(chunks)
+        self.round += 1
         for count, chunk in enumerate(chunks):
             filename = f'{chunk.id}_input.csv'
             filepath = os.path.join(outdir, filename)
@@ -113,9 +116,9 @@ class ChunkGenerator:
                 with open(filepath, mode='w', newline='') as file:
                     writer = csv.writer(file, quotechar='"', quoting=csv.QUOTE_MINIMAL)
                     writer.writerows(chunk.data.inputs)
-                logger.info(f'Saved chunk {count} to {filepath}')
+                logger.debug(f'Saved chunk {count + 1}/{length} (round {self.round}) to {filename}')
             except Exception as e:
-                logger.error(f'Error saving file {filepath}: {e}')
+                logger.error(f'Error saving file {filename}: {e}')
 
 
 class ChunkProcessor:
@@ -193,13 +196,14 @@ class ChunkProcessor:
         :param filepath: The file path where the CSV will be saved
         """
         try:
+            filename = os.path.basename(filepath)
             with open(filepath, mode='w', newline='') as file:
                 writer = csv.writer(file, quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 writer.writerow(self.headers)  # Write headers
                 writer.writerows(self.results)  # Write processed rows
-            self._log_info(f'Saved chunk {self.count + 1} to {filepath}')
+            self._log_info(f'Saved chunk {self.count + 1} to {filename}')
         except Exception as e:
-            logger.error(f'Unable to save file {filepath}: {e}')
+            logger.error(f'Unable to save file {filename}: {e}')
 
     def _log_info(self, message):
         """Logs a message if verbose mode is enabled."""

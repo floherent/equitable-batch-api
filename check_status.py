@@ -4,6 +4,7 @@ import json
 import os
 import sys
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 import httpx
@@ -83,7 +84,13 @@ def fetch_status(
     if token:
         headers['Authorization'] = f'Bearer {token}'
     else:
+        parsed_url = urlparse(url.rstrip('/'))
+        url_paths = str(parsed_url.path).split('/')
+        if len(url_paths) < 2:
+            raise ValueError('tenant name is missing from the base URL')
+
         headers['x-synthetic-key'] = str(api_key)
+        headers['x-tenant-name'] = url_paths[1]
 
     response = httpx.get(url, headers=headers, timeout=timeout_seconds, verify=verify_tls)
     response.raise_for_status()
@@ -117,6 +124,7 @@ def print_tenant_buffers(payload: Dict[str, Any]) -> None:
 
     print_separator('-', 100)
     print('Tenant Buffers')
+    print(f'  Workers: {status.get("workers_in_use")} / {configuration.get("max_workers")}')
     print(f'  Inputs:')
     print(f'    - allocated: {format_mb(input_allocated_mb)}')
     print(f'    - used:      {format_mb(input_used_mb)} ({percentage(input_used_mb, input_allocated_mb)})')
